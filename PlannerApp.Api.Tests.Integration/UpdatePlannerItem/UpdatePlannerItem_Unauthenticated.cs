@@ -10,17 +10,17 @@ using FluentAssertions;
 
 namespace PlannerApp.Api.Tests.Integration.UpdatePlannerItem
 {
-    public class UpdatePlannerItem_WithInvalidId : IClassFixture<PlannerAppApiFactory>
+    public class UpdatePlannerItem_Unauthenticated : IClassFixture<PlannerAppApiFactory>
     {
         private readonly PlannerAppApiFactory _factory;
 
-        public UpdatePlannerItem_WithInvalidId(PlannerAppApiFactory factory)
+        public UpdatePlannerItem_Unauthenticated(PlannerAppApiFactory factory)
         {
             _factory = factory;
         }
 
         [Fact]
-        public async Task RespondsWithNotFound()
+        public async Task RespondsWithUnauthorized()
         {
             //Arrange
             var httpClient = _factory.CreateClient();
@@ -31,17 +31,18 @@ namespace PlannerApp.Api.Tests.Integration.UpdatePlannerItem
             //Act
             var updatedPlannerItem = new PlannerItem
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = plannerItem.Id,
                 Title = plannerItem.Title,
                 Description = plannerItem.Description,
                 DateCreated = plannerItem.DateCreated,
                 DateToAction = plannerItem.DateToAction,
                 Completed = true
             };
+            httpClient.DefaultRequestHeaders.Remove("X-Api-Key");
             var response = await httpClient.PutAsJsonAsync($"/planner", updatedPlannerItem);
 
             //Assert
-            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
     }
 }

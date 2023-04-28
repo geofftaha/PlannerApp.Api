@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using PlannerApp.Api.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,19 +7,19 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PlannerApp.Api.Tests.Integration.GetPlannerItem
+namespace PlannerApp.Api.Tests.Integration.DeletePlannerItem
 {
-    public class GetPlannerItem_WithInvalidId : IClassFixture<PlannerAppApiFactory>
+    public class DeletePlannerItem_Unauthenticated : IClassFixture<PlannerAppApiFactory>
     {
         private readonly PlannerAppApiFactory _factory;
 
-        public GetPlannerItem_WithInvalidId(PlannerAppApiFactory factory)
+        public DeletePlannerItem_Unauthenticated(PlannerAppApiFactory factory)
         {
             _factory = factory;
         }
 
         [Fact]
-        public async Task PlannerItemReturnedSuccessfully()
+        public async Task RespondsWithUnauthorized()
         {
             //Arrange
             var httpClient = _factory.CreateClient();
@@ -29,11 +28,11 @@ namespace PlannerApp.Api.Tests.Integration.GetPlannerItem
             await httpClient.PostAsJsonAsync("/planner", plannerItem);
 
             //Act
-            var invalidId = Guid.NewGuid().ToString();
-            var response = await httpClient.GetAsync($"/planner/{invalidId}");
+            httpClient.DefaultRequestHeaders.Remove("X-Api-Key");
+            var response = await httpClient.DeleteAsync($"/planner/{plannerItem.Id}");
 
             //Assert
-            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
     }
 }

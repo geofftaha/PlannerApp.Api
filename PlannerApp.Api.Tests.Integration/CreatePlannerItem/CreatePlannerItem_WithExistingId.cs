@@ -19,6 +19,7 @@ namespace PlannerApp.Api.Tests.Integration.CreatePlannerItem
             //Arrange
             var httpClient = _factory.CreateClient();
             var plannerItem = new PlannerAppApiHelper().GeneratePlannerItem(this.GetType().Name);
+            httpClient.DefaultRequestHeaders.Add("X-Api-Key", "SuperSecretApiKey");
             await httpClient.PostAsJsonAsync("/planner", plannerItem);
 
             //Act

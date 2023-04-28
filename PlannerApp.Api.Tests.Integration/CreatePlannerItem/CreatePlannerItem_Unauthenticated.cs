@@ -12,17 +12,17 @@ using System.Threading.Tasks;
 
 namespace PlannerApp.Api.Tests.Integration.CreatePlannerItem
 {
-    public class CreatePlannerItem_Unauthorized : IClassFixture<PlannerAppApiFactory>
+    public class CreatePlannerItem_Unauthenticated : IClassFixture<PlannerAppApiFactory>
     {
         private readonly PlannerAppApiFactory _factory;
 
-        public CreatePlannerItem_Unauthorized(PlannerAppApiFactory factory)
+        public CreatePlannerItem_Unauthenticated(PlannerAppApiFactory factory)
         {
             _factory = factory;
         }
 
         [Fact]
-        public async Task RespondsWithNotAuthorized()
+        public async Task RespondsWithUnauthorized()
         {
             //Arrange
             var httpClient = _factory.CreateClient();

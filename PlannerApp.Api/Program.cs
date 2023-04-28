@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PlannerApp.Api.Auth;
 using PlannerApp.Api.Data;
 using PlannerApp.Api.Models;
 using PlannerApp.Api.Services;
@@ -18,8 +19,6 @@ builder.Services.AddDbContext<IPlannerContext, PlannerContext>(options =>
 });
 builder.Services.AddScoped<IPlannerService, PlannerService>();
 
-builder.Services.AddAuthorization();
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -28,12 +27,11 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 
 app.UseHttpsRedirection();
+app.UseMiddleware<ApiKeyAuthMiddleware>();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseAuthorization();
-
-app.MapPost("planner", [Authorize()]async (PlannerItem plannerItem, IPlannerService plannerService) =>
+app.MapPost("planner", async (PlannerItem plannerItem, IPlannerService plannerService) =>
 {
     if (plannerItem is null || string.IsNullOrEmpty(plannerItem.Id)) return Results.BadRequest();
 
