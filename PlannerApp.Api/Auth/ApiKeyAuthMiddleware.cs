@@ -13,19 +13,23 @@
 
         public async Task InvokeAsync(HttpContext context)
         {
-            if(!context.Request.Headers.TryGetValue(AuthConstants.ApiKeyHeaderName, out var extractedApiKey))
+            if(!context.Request.Path.StartsWithSegments("/swagger"))
             {
-                context.Response.StatusCode = 401;
-                await context.Response.WriteAsync("API Key missing!");
-                return;
-            }
+                if (!context.Request.Headers.TryGetValue(AuthConstants.ApiKeyHeaderName, out var extractedApiKey))
+                {
+                    context.Response.StatusCode = 401;
+                    await context.Response.WriteAsync("API Key missing!");
+                    return;
+                }
 
-            var apiKey = _configuration[AuthConstants.ApiKeySectionName];
-            if(!apiKey.Equals(extractedApiKey))
-            {
-                context.Response.StatusCode = 401;
-                await context.Response.WriteAsync("Invalid API Key!");
-            }
+                var apiKey = _configuration[AuthConstants.ApiKeySectionName];
+                if (!apiKey.Equals(extractedApiKey))
+                {
+                    context.Response.StatusCode = 401;
+                    await context.Response.WriteAsync("Invalid API Key!");
+                    return;
+                }
+            }          
 
             await _next(context);
         }
