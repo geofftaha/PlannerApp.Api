@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PlannerApp.Api.Auth;
@@ -22,16 +23,27 @@ builder.Services.AddScoped<IPlannerService, PlannerService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PlannerAppClient", x => x
+    .WithOrigins("http://localhost:44398")
+    .SetIsOriginAllowed((host) => true)
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .AllowCredentials());
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseCors("PlannerAppClient");
 
 app.UseHttpsRedirection();
 app.UseMiddleware<ApiKeyAuthMiddleware>();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.MapPost("planner", async (PlannerItem plannerItem, IPlannerService plannerService) =>
+app.MapPost("planner", [EnableCors("PlannerAppClient")] async (PlannerItem plannerItem, IPlannerService plannerService) =>
 {
     if (plannerItem is null || string.IsNullOrEmpty(plannerItem.Id)) return Results.BadRequest();
 
@@ -41,7 +53,7 @@ app.MapPost("planner", async (PlannerItem plannerItem, IPlannerService plannerSe
     return Results.Created($"/planner/{plannerItem.Id}", plannerItem);    
 }).WithName("CreatePlannerItem");
 
-app.MapGet("planner/{id}", async (string id, IPlannerService plannerService) =>
+app.MapGet("planner/{id}", [EnableCors("PlannerAppClient")] async (string id, IPlannerService plannerService) =>
 {
     var plannerItem = await plannerService.GetPlannerItemAsync(id);
     if(plannerItem is null) return Results.BadRequest();
@@ -49,14 +61,14 @@ app.MapGet("planner/{id}", async (string id, IPlannerService plannerService) =>
     return Results.Ok(plannerItem);
 }).WithName("GetPlannerItem");
 
-app.MapGet("planner", async (IPlannerService plannerService) =>
+app.MapGet("planner", [EnableCors("PlannerAppClient")] async (IPlannerService plannerService) =>
 {
     var plannerItems = await plannerService.GetAllPlannerItemsAsync();
 
     return Results.Ok(plannerItems);
 }).WithName("GetPlannerItems");
 
-app.MapPut("planner", async (PlannerItem plannerItem, IPlannerService plannerService) => 
+app.MapPut("planner", [EnableCors("PlannerAppClient")] async (PlannerItem plannerItem, IPlannerService plannerService) => 
 {
     if (plannerItem is null || string.IsNullOrEmpty(plannerItem.Id)) return Results.BadRequest();
 
@@ -65,7 +77,7 @@ app.MapPut("planner", async (PlannerItem plannerItem, IPlannerService plannerSer
     return updated ? Results.Ok(plannerItem) : Results.NotFound();
 }).WithName("UpdatePlannerItem");
 
-app.MapDelete("planner/{id}", async (string id, IPlannerService plannerService) =>
+app.MapDelete("planner/{id}", [EnableCors("PlannerAppClient")] async (string id, IPlannerService plannerService) =>
 {
     if (string.IsNullOrEmpty(id)) return Results.BadRequest();
 
