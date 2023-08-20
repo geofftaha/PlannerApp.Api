@@ -14,14 +14,15 @@ namespace PlannerApp.Api.Services
             _plannerContext = plannerContext;
         }
 
-        public async Task<bool> CreatePlannerItemAsync(PlannerItem plannerItem)
+        public async Task<CreatePlannerItemResponse> CreatePlannerItemAsync(PlannerItem plannerItem)
         {
             var existingPlannerItem = await GetPlannerItemAsync(plannerItem.Id);
-            if(existingPlannerItem is not null) return false;
+            if(existingPlannerItem is not null) return new CreatePlannerItemResponse { IsSuccess = false, StatusMessage = "This item already exists"};
 
             await _plannerContext.PlannerItems.AddAsync(plannerItem);
             var result = await _plannerContext.SaveChangesAsync();
-            return result > 0;
+
+            return result > 0 ? new CreatePlannerItemResponse { IsSuccess = true } : new CreatePlannerItemResponse { IsSuccess = false, StatusMessage = "Unable to save item"};
         }        
 
         public async Task<PlannerItem> GetPlannerItemAsync(string id)

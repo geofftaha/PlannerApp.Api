@@ -47,8 +47,8 @@ app.MapPost("planner", [EnableCors("PlannerAppClient")] async (PlannerItem plann
 {
     if (plannerItem is null || string.IsNullOrEmpty(plannerItem.Id)) return Results.BadRequest();
 
-    var created = await plannerService.CreatePlannerItemAsync(plannerItem);
-    if (!created) return Results.BadRequest();   
+    var response = await plannerService.CreatePlannerItemAsync(plannerItem);
+    if (!response.IsSuccess) return Results.Problem(title: response.StatusMessage, statusCode: 400);   
 
     return Results.Created($"/planner/{plannerItem.Id}", plannerItem);    
 }).WithName("CreatePlannerItem");

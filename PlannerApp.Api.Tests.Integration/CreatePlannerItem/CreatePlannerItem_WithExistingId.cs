@@ -1,6 +1,8 @@
 ﻿using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace PlannerApp.Api.Tests.Integration.CreatePlannerItem
 {
@@ -24,9 +26,14 @@ namespace PlannerApp.Api.Tests.Integration.CreatePlannerItem
 
             //Act
             var response = await httpClient.PostAsJsonAsync("/planner", plannerItem);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var problemDetail = JsonSerializer.Deserialize<ProblemDetails>(responseContent);
 
             //Assert
-            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            Assert.Multiple(
+                () => response.StatusCode.Should().Be(HttpStatusCode.BadRequest),
+                () => problemDetail!.Title.Should().Be("This item already exists")
+                );
         }
     }
 }
